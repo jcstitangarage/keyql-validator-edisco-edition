@@ -13,18 +13,28 @@
   <body>
     <header>
       <h1>Purview KeyQL Tester</h1>
-      <p class="subtitle">Draft, validate, and dry-run eDiscovery queries locally.</p>
+      <p class="subtitle">
+        Draft, validate, and dry-run eDiscovery queries locally — all data is synthetic.
+      </p>
     </header>
     <main>
       <section class="editor-section">
         <label for="editor-host">Query</label>
         <div id="editor-host"></div>
+        <p class="hint">
+          Try <code>kind:email AND from:pilarp</code> · <code>size&gt;10000</code> ·
+          <code>filetype:docx AND author:"Ann Beebe"</code>
+        </p>
       </section>
       <section class="output-section">
         <h2>Diagnostics</h2>
         <ul id="diagnostics" aria-live="polite"></ul>
-        <h2>Parsed AST</h2>
-        <pre id="ast-output" aria-live="polite"></pre>
+        <h2>Dry-run matches <span id="match-count" class="count"></span></h2>
+        <ul id="matches" aria-live="polite"></ul>
+        <details>
+          <summary>Parsed AST</summary>
+          <pre id="ast-output"></pre>
+        </details>
       </section>
     </main>
     <script type="module" src="/src/main.ts"></script>
