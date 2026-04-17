@@ -228,46 +228,33 @@ export function initConditionBuilder(params: {
     return select;
   }
 
+  function buildFixedSelect(row: ConditionRow, values: string[]): HTMLSelectElement {
+    const select = document.createElement("select");
+    select.setAttribute("aria-label", "Value");
+    const first = document.createElement("option");
+    first.value = "";
+    first.textContent = "— select —";
+    select.appendChild(first);
+    for (const v of values) {
+      const opt = document.createElement("option");
+      opt.value = v;
+      opt.textContent = v;
+      select.appendChild(opt);
+    }
+    select.value = row.value;
+    select.addEventListener("change", () => {
+      row.value = select.value;
+      updatePreview();
+    });
+    return select;
+  }
+
   function buildValueElement(row: ConditionRow): HTMLElement {
     const property = findProperty(row.propertyName);
+    const fixedValues = property ? fixedValueSet(property) : undefined;
 
-    if (property && property.type === "enum") {
-      const select = document.createElement("select");
-      select.setAttribute("aria-label", "Value");
-      const first = document.createElement("option");
-      first.value = "";
-      first.textContent = "— select —";
-      select.appendChild(first);
-      const values = resolveEnumValues(property);
-      for (const v of values) {
-        const opt = document.createElement("option");
-        opt.value = v;
-        opt.textContent = v;
-        select.appendChild(opt);
-      }
-      select.value = row.value;
-      select.addEventListener("change", () => {
-        row.value = select.value;
-        updatePreview();
-      });
-      return select;
-    }
-
-    if (property && property.type === "boolean") {
-      const select = document.createElement("select");
-      select.setAttribute("aria-label", "Value");
-      for (const v of ["", "true", "false"]) {
-        const opt = document.createElement("option");
-        opt.value = v;
-        opt.textContent = v || "— select —";
-        select.appendChild(opt);
-      }
-      select.value = row.value;
-      select.addEventListener("change", () => {
-        row.value = select.value;
-        updatePreview();
-      });
-      return select;
+    if (fixedValues) {
+      return buildFixedSelect(row, fixedValues);
     }
 
     const wrapper = document.createElement("div");
@@ -442,6 +429,12 @@ function resolveEnumValues(property: Property): string[] {
   if (property.values) return property.values;
   if (property.valuesRef === "kindValues") return getCatalog().kindValues;
   return [];
+}
+
+function fixedValueSet(property: Property): string[] | undefined {
+  if (property.type === "enum") return resolveEnumValues(property);
+  if (property.type === "boolean") return ["true", "false"];
+  return undefined;
 }
 
 function formatCondition(

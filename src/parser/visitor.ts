@@ -163,10 +163,6 @@ class AstBuilder extends BaseCstVisitor {
       opSpan: Span;
       value: LiteralValue | RangeValue;
     };
-
-    if (primary.form !== "bare") {
-      return this.synthPropertyRestriction(primary, tailResult);
-    }
     return this.synthPropertyRestriction(primary, tailResult);
   }
 

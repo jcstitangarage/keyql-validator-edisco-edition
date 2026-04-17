@@ -64,9 +64,8 @@ function matchBoolean(node: BooleanNode, item: CorpusItem): boolean {
 
 function matchTerm(node: TermNode, item: CorpusItem): boolean {
   const needle = node.value.value.toLowerCase();
-  const wildcard = node.value.wildcard;
   const haystacks = fullTextHaystacks(item);
-  return haystacks.some((h) => compareText(h, needle, wildcard, "contains"));
+  return haystacks.some((h) => h.toLowerCase().includes(needle));
 }
 
 function matchProperty(node: PropertyRestrictionNode, item: CorpusItem): boolean {
@@ -103,11 +102,9 @@ function matchOrdered(
   if (property.type === "date") {
     const itemDate = readDate(property, item);
     if (!itemDate) return false;
-    const comparand = resolveDateValue(value);
-    if (!comparand) return false;
-    const c = typeof comparand === "string" ? undefined : comparand;
-    if (!c) return false;
-    const ref = op === ">" || op === ">=" ? c.start : c.end;
+    const window = resolveDateValue(value);
+    if (!window) return false;
+    const ref = op === ">" || op === ">=" ? window.start : window.end;
     return compareNumeric(itemDate.getTime(), op, ref.getTime());
   }
   if (property.type === "number") {
@@ -156,7 +153,7 @@ function matchEqualityOrContains(
     default: {
       const itemStr = readString(property, item);
       if (!itemStr) return false;
-      return compareText(itemStr, v, value.wildcard, "contains");
+      return itemStr.toLowerCase().includes(v.toLowerCase());
     }
   }
 }
@@ -250,73 +247,79 @@ function readDate(property: Property, item: CorpusItem): Date | undefined {
 
 function mapProperty(property: Property, item: CorpusItem): unknown {
   const name = property.name.toLowerCase();
-  const itemMail = item as MailItem;
-  const itemDoc = item as DocItem;
+  if (name === "kind") return item.kind;
+  if (name === "size") return item.size;
+
+  if (isMail(item)) {
+    return mapMailProperty(name, item);
+  }
+  return mapDocProperty(name, item);
+}
+
+function mapMailProperty(name: string, item: MailItem): unknown {
   switch (name) {
-    case "kind":
-      return item.kind;
     case "subject":
     case "subjecttitle":
-      return (
-        (itemMail.subject as string | undefined) ?? (itemDoc.title as string | undefined) ?? ""
-      );
     case "title":
-      return itemDoc.title ?? itemMail.subject;
+      return item.subject;
     case "from":
     case "sender":
-      return itemMail.from;
+      return item.from;
     case "to":
-      return itemMail.to;
+      return item.to;
     case "cc":
-      return itemMail.cc;
+      return item.cc;
     case "bcc":
-      return itemMail.bcc;
+      return item.bcc;
     case "recipients":
-      return [...(itemMail.to ?? []), ...(itemMail.cc ?? []), ...(itemMail.bcc ?? [])];
+      return [...item.to, ...item.cc, ...item.bcc];
     case "participants":
-      return [
-        itemMail.from,
-        ...(itemMail.to ?? []),
-        ...(itemMail.cc ?? []),
-        ...(itemMail.bcc ?? []),
-      ];
+      return [item.from, ...item.to, ...item.cc, ...item.bcc];
     case "sent":
-      return itemMail.sent;
-    case "received":
-      return itemMail.received;
-    case "hasattachment":
-      return itemMail.hasAttachment;
-    case "attachmentnames":
-      return itemMail.attachmentNames;
-    case "importance":
-      return itemMail.importance;
-    case "isread":
-      return itemMail.isRead;
-    case "category":
-      return itemMail.category;
-    case "size":
-      return item.kind === "docs" ? itemDoc.size : itemMail.size;
     case "date":
-      return item.kind === "docs" ? itemDoc.lastModifiedTime : itemMail.sent;
+      return item.sent;
+    case "received":
+      return item.received;
+    case "hasattachment":
+      return item.hasAttachment;
+    case "attachmentnames":
+      return item.attachmentNames;
+    case "importance":
+      return item.importance;
+    case "isread":
+      return item.isRead;
+    case "category":
+      return item.category;
+    default:
+      return undefined;
+  }
+}
+
+function mapDocProperty(name: string, item: DocItem): unknown {
+  switch (name) {
+    case "subject":
+    case "subjecttitle":
+    case "title":
+      return item.title;
+    case "author":
+    case "createdby":
+      return name === "author" ? item.author : item.createdBy;
+    case "modifiedby":
+      return item.modifiedBy;
+    case "created":
+      return item.created;
+    case "lastmodifiedtime":
+    case "date":
+      return item.lastModifiedTime;
     case "filename":
-      return itemDoc.filename;
+      return item.filename;
     case "fileextension":
     case "filetype":
-      return itemDoc.fileExtension;
-    case "author":
-      return itemDoc.author;
-    case "createdby":
-      return itemDoc.createdBy;
-    case "modifiedby":
-      return itemDoc.modifiedBy;
-    case "created":
-      return itemDoc.created;
-    case "lastmodifiedtime":
-      return itemDoc.lastModifiedTime;
+      return item.fileExtension;
     case "contenttype":
-      return itemDoc.contentType;
+      return item.contentType;
     case "detectedlanguage":
-      return itemDoc.detectedLanguage;
+      return item.detectedLanguage;
     default:
       return undefined;
   }
@@ -350,20 +353,6 @@ function compareNumeric(
     case ">=":
       return a >= b;
   }
-}
-
-function compareText(
-  haystack: string,
-  needle: string,
-  wildcard: boolean,
-  mode: "contains" | "equals"
-): boolean {
-  const h = haystack.toLowerCase();
-  const n = needle.toLowerCase();
-  if (wildcard) {
-    return h.includes(n);
-  }
-  return mode === "equals" ? h === n : h.includes(n);
 }
 
 function fullTextHaystacks(item: CorpusItem): string[] {

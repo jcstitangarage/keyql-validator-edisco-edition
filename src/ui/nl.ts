@@ -46,7 +46,7 @@ export function initNaturalLanguage(params: {
     params.notes.replaceChildren();
     for (const step of result.steps) {
       const li = document.createElement("li");
-      li.className = "nl-note ok";
+      li.className = `nl-note ${step.severity}`;
       const label = document.createElement("span");
       label.className = "nl-phrase";
       label.textContent = step.phrase;

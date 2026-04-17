@@ -698,6 +698,16 @@ details.ast-details summary {
   border-color: #a5ddb7;
 }
 
+.nl-note.substituted {
+  background: #fff3e0;
+  border-color: #f0c48a;
+}
+
+.nl-note.substituted .nl-phrase {
+  background: #ffe0b2;
+  border-color: #f0c48a;
+}
+
 .nl-note.warn {
   background: var(--warn-soft);
   border-color: #e6c97a;
