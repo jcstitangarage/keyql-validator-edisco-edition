@@ -12,8 +12,18 @@ import {
 } from "./ui/scenarios.js";
 import { renderReferences } from "./ui/references.js";
 import { renderSamples } from "./ui/samples.js";
-import { initConditionBuilder } from "./ui/conditionBuilder.js";
-import { BUILD_TIME, BUILD_COMMIT, REPO_URL, REPO_COMMIT_URL, formatBuildDate } from "./meta.js";
+import {
+  initConditionBuilder,
+  renderOperatorLegend,
+} from "./ui/conditionBuilder.js";
+import {
+  BUILD_TIME,
+  BUILD_COMMIT,
+  CATALOG_URL,
+  REPO_URL,
+  REPO_COMMIT_URL,
+  formatBuildDate,
+} from "./meta.js";
 
 const initialScenario: Scenario | undefined = getScenarios()[0];
 const INITIAL_DOC = initialScenario?.query ?? "";
@@ -31,6 +41,9 @@ const builderPreview = must<HTMLDivElement>("#builder-preview");
 const builderAdd = must<HTMLButtonElement>("#builder-add-condition");
 const builderApply = must<HTMLButtonElement>("#builder-apply");
 const builderReset = must<HTMLButtonElement>("#builder-reset");
+const operatorLegendList = must<HTMLUListElement>("#operator-legend-list");
+const scenariosDetails = must<HTMLDetailsElement>("#scenarios-details");
+const editorStatus = must<HTMLSpanElement>("#editor-status");
 const pageMeta = must<HTMLDivElement>("#page-meta");
 const buildInfo = must<HTMLSpanElement>("#build-info");
 const repoLink = must<HTMLAnchorElement>("#repo-link");
@@ -47,10 +60,14 @@ initConditionBuilder({
   addButton: builderAdd,
   applyButton: builderApply,
   resetButton: builderReset,
-  onApply: (query) => setEditorContents(query),
+  onApply: (query) => setEditorContents(query, "applied from condition builder"),
 });
 
-renderScenarios(scenarioList, (scenario) => setEditorContents(scenario.query));
+renderOperatorLegend(operatorLegendList);
+renderScenarios(scenarioList, (scenario) => {
+  setEditorContents(scenario.query, `loaded scenario: ${scenario.title}`);
+  scenariosDetails.open = false;
+});
 renderReferences(referencesList);
 renderSamples(samplesContainer);
 renderPageMeta();
@@ -59,32 +76,48 @@ renderFor(INITIAL_DOC);
 function renderPageMeta(): void {
   const built = formatBuildDate(BUILD_TIME);
   pageMeta.replaceChildren();
-  pageMeta.appendChild(
-    textNode(`Catalog captured 2026-04-16 from Microsoft Learn.`)
-  );
-  pageMeta.appendChild(textNode(`Page built ${built} · commit `));
-  const link = document.createElement("a");
-  link.href = REPO_COMMIT_URL;
-  link.target = "_blank";
-  link.rel = "noreferrer noopener";
-  link.textContent = BUILD_COMMIT;
-  pageMeta.appendChild(link);
+
+  const catalogSpan = document.createElement("span");
+  catalogSpan.appendChild(document.createTextNode("Catalog captured 2026-04-16 from Microsoft Learn — "));
+  const catalogLink = document.createElement("a");
+  catalogLink.href = CATALOG_URL;
+  catalogLink.target = "_blank";
+  catalogLink.rel = "noreferrer noopener";
+  catalogLink.textContent = "view catalog JSON";
+  catalogSpan.appendChild(catalogLink);
+  pageMeta.appendChild(catalogSpan);
+
+  const buildSpan = document.createElement("span");
+  buildSpan.appendChild(document.createTextNode(`Page built ${built} · commit `));
+  const commitLink = document.createElement("a");
+  commitLink.href = REPO_COMMIT_URL;
+  commitLink.target = "_blank";
+  commitLink.rel = "noreferrer noopener";
+  commitLink.textContent = BUILD_COMMIT;
+  buildSpan.appendChild(commitLink);
+  pageMeta.appendChild(buildSpan);
 
   buildInfo.textContent = `Built ${built} · commit ${BUILD_COMMIT}`;
   repoLink.href = REPO_URL;
 }
 
-function textNode(text: string): HTMLSpanElement {
-  const span = document.createElement("span");
-  span.textContent = text;
-  return span;
-}
-
-function setEditorContents(query: string): void {
+function setEditorContents(query: string, statusMessage?: string): void {
   editorView.dispatch({
     changes: { from: 0, to: editorView.state.doc.length, insert: query },
   });
   editorView.focus();
+  editorHost.scrollIntoView({ behavior: "smooth", block: "start" });
+  editorHost.classList.remove("flash");
+  requestAnimationFrame(() => {
+    editorHost.classList.add("flash");
+    setTimeout(() => editorHost.classList.remove("flash"), 900);
+  });
+  if (statusMessage) {
+    editorStatus.textContent = statusMessage;
+    setTimeout(() => {
+      if (editorStatus.textContent === statusMessage) editorStatus.textContent = "";
+    }, 3500);
+  }
 }
 
 function renderFor(source: string): void {

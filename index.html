@@ -57,21 +57,30 @@
           </section>
 
           <section class="panel" id="scenarios">
-            <h2>Scenarios</h2>
-            <p class="description">
-              Templates mirroring the most common eDiscovery search shapes. All
-              identities, project names, and domains are synthetic.
-            </p>
-            <div class="scenario-list" id="scenario-list"></div>
+            <details id="scenarios-details" open>
+              <summary>
+                <h2 style="display: inline-flex; margin: 0">Scenarios</h2>
+              </summary>
+              <p class="description">
+                Templates mirroring the most common eDiscovery search shapes. All
+                identities, project names, and domains are synthetic. Selecting one
+                loads it into the editor below.
+              </p>
+              <div class="scenario-list" id="scenario-list"></div>
+            </details>
           </section>
 
           <section class="panel" id="builder">
             <h2>Condition builder</h2>
             <p class="description">
-              Mirrors the Purview condition builder. Each row becomes one property
+              Mirrors the Purview condition builder. Each row is one property
               restriction — values come from the synthetic data palette so you don't
               type real names.
             </p>
+            <details class="operator-legend">
+              <summary>Operator reference — click to expand</summary>
+              <ul id="operator-legend-list"></ul>
+            </details>
             <div id="builder-rows"></div>
             <div class="builder-actions">
               <button id="builder-add-condition" type="button">+ Add condition</button>
@@ -85,8 +94,11 @@
             </div>
           </section>
 
-          <section class="panel" id="editor-panel">
-            <h2>Query editor</h2>
+          <section class="panel editor-panel" id="editor-panel">
+            <h2>
+              Query editor
+              <span class="count" id="editor-status"></span>
+            </h2>
             <p class="description">
               Syntax-highlighted KeyQL. <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + space triggers
               autocomplete.

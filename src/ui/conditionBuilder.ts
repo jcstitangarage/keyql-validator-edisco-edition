@@ -22,6 +22,23 @@ export interface BuilderHandles {
 let idCounter = 0;
 const nextId = () => `row-${++idCounter}`;
 
+export function renderOperatorLegend(host: HTMLElement): void {
+  const ops = getCatalog().propertyOperators;
+  host.replaceChildren();
+  for (const spec of ops) {
+    const li = document.createElement("li");
+    const sym = document.createElement("span");
+    sym.className = "op-symbol";
+    sym.textContent = spec.op;
+    const desc = document.createElement("span");
+    desc.className = "op-desc";
+    desc.textContent = spec.description;
+    li.appendChild(sym);
+    li.appendChild(desc);
+    host.appendChild(li);
+  }
+}
+
 export function initConditionBuilder(params: {
   rowsHost: HTMLElement;
   previewEl: HTMLElement;
@@ -60,7 +77,7 @@ export function initConditionBuilder(params: {
     const label = document.createElement("label");
     label.className = "field";
     label.htmlFor = "builder-keywords";
-    label.textContent = "Keywords (free text)";
+    label.textContent = "Keywords (free text, joined with AND to conditions below)";
 
     const input = document.createElement("input");
     input.type = "text";
@@ -72,19 +89,20 @@ export function initConditionBuilder(params: {
       updatePreview();
     });
 
-    const cell = document.createElement("div");
-    cell.style.gridColumn = "1 / -1";
-    cell.appendChild(label);
-    cell.appendChild(input);
-    row.appendChild(cell);
+    row.appendChild(label);
+    row.appendChild(input);
     return row;
   }
 
   function renderConditionRow(row: ConditionRow): HTMLElement {
-    const wrap = document.createElement("div");
-    wrap.className = "builder-row";
+    const card = document.createElement("div");
+    card.className = "builder-row";
+
+    const head = document.createElement("div");
+    head.className = "builder-row-head";
 
     const propertySelect = document.createElement("select");
+    propertySelect.className = "property-select";
     propertySelect.setAttribute("aria-label", "Property");
     for (const p of propertyOptions) {
       const opt = document.createElement("option");
@@ -102,7 +120,6 @@ export function initConditionBuilder(params: {
     });
 
     const opSelect = buildOperatorSelect(row);
-    const valueEl = buildValueInput(row);
 
     const remove = document.createElement("button");
     remove.type = "button";
@@ -113,22 +130,40 @@ export function initConditionBuilder(params: {
       render();
     });
 
-    wrap.appendChild(propertySelect);
-    wrap.appendChild(opSelect);
-    wrap.appendChild(valueEl);
-    wrap.appendChild(remove);
-    return wrap;
+    head.appendChild(propertySelect);
+    head.appendChild(opSelect);
+    head.appendChild(remove);
+
+    const caption = document.createElement("div");
+    caption.className = "op-caption";
+    caption.textContent = describeOperator(row.operator);
+    head.appendChild(caption);
+
+    opSelect.addEventListener("change", () => {
+      caption.textContent = describeOperator(row.operator);
+    });
+
+    card.appendChild(head);
+
+    const valueRow = document.createElement("div");
+    valueRow.className = "builder-row-value";
+    valueRow.appendChild(buildValueElement(row));
+    card.appendChild(valueRow);
+
+    return card;
   }
 
   function buildOperatorSelect(row: ConditionRow): HTMLSelectElement {
     const property = findProperty(row.propertyName);
     const select = document.createElement("select");
+    select.className = "operator-select";
     select.setAttribute("aria-label", "Operator");
     const ops = property?.operators ?? [":"];
     for (const op of ops) {
       const opt = document.createElement("option");
       opt.value = op;
       opt.textContent = op;
+      opt.title = describeOperator(op);
       select.appendChild(opt);
     }
     select.value = row.operator;
@@ -139,8 +174,9 @@ export function initConditionBuilder(params: {
     return select;
   }
 
-  function buildValueInput(row: ConditionRow): HTMLElement {
+  function buildValueElement(row: ConditionRow): HTMLElement {
     const property = findProperty(row.propertyName);
+
     if (property && property.type === "enum") {
       const select = document.createElement("select");
       select.setAttribute("aria-label", "Value");
@@ -181,9 +217,8 @@ export function initConditionBuilder(params: {
     }
 
     const wrapper = document.createElement("div");
-    wrapper.style.display = "flex";
-    wrapper.style.gap = "0.35rem";
-    wrapper.style.alignItems = "center";
+    wrapper.className = "builder-row-value";
+    wrapper.style.flex = "1 1 100%";
 
     const input = document.createElement("input");
     input.type = "text";
@@ -195,7 +230,7 @@ export function initConditionBuilder(params: {
     });
     wrapper.appendChild(input);
 
-    const suggestion = buildSuggestionButton(property, (value) => {
+    const suggestion = buildSuggestionSelect(property, (value) => {
       input.value = value;
       row.value = value;
       updatePreview();
@@ -205,7 +240,7 @@ export function initConditionBuilder(params: {
     return wrapper;
   }
 
-  function buildSuggestionButton(
+  function buildSuggestionSelect(
     property: Property | undefined,
     onPick: (value: string) => void
   ): HTMLElement | null {
@@ -214,12 +249,11 @@ export function initConditionBuilder(params: {
     if (suggestions.length === 0) return null;
 
     const select = document.createElement("select");
+    select.className = "samples-select";
     select.setAttribute("aria-label", "Insert synthetic value");
-    select.style.flexShrink = "0";
-    select.style.width = "auto";
     const placeholder = document.createElement("option");
     placeholder.value = "";
-    placeholder.textContent = "samples…";
+    placeholder.textContent = "insert sample…";
     select.appendChild(placeholder);
     for (const s of suggestions) {
       const opt = document.createElement("option");
@@ -293,6 +327,11 @@ export function initConditionBuilder(params: {
     },
     getQuery: buildQuery,
   };
+}
+
+function describeOperator(op: string): string {
+  const spec = getCatalog().propertyOperators.find((o) => o.op === op);
+  return spec?.description ?? "";
 }
 
 function placeholderFor(property: Property | undefined): string {

@@ -6,6 +6,7 @@ export const BUILD_COMMIT = typeof __BUILD_COMMIT__ === "string" ? __BUILD_COMMI
 
 export const REPO_URL = "https://github.com/jcstitangarage/keyql-validator-edisco-edition";
 export const REPO_COMMIT_URL = `${REPO_URL}/commit/${BUILD_COMMIT}`;
+export const CATALOG_URL = `${REPO_URL}/blob/main/data/ediscovery-properties.json`;
 
 export function formatBuildDate(iso: string): string {
   if (!iso) return "unknown";
