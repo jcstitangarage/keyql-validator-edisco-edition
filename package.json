@@ -5,6 +5,9 @@
   "type": "module",
   "description": "Purview eDiscovery KeyQL tester — parse, validate, and dry-run queries before filing real cases.",
   "license": "MIT",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -noEmit && vite build",
