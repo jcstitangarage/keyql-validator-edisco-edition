@@ -7,36 +7,145 @@
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; base-uri 'self'; form-action 'none'; object-src 'none'; frame-ancestors 'none'"
     />
-    <title>Purview KeyQL Tester</title>
+    <title>KeyQL Validator · eDisco Edition</title>
     <link rel="stylesheet" href="/src/styles.css" />
   </head>
   <body>
-    <header>
-      <h1>Purview KeyQL Tester</h1>
-      <p class="subtitle">
-        Draft, validate, and dry-run eDiscovery queries locally — all data is synthetic.
-      </p>
-    </header>
-    <main>
-      <section class="editor-section">
-        <label for="editor-host">Query</label>
-        <div id="editor-host"></div>
-        <p class="hint">
-          Try <code>kind:email AND from:pilarp</code> · <code>size&gt;10000</code> ·
-          <code>filetype:docx AND author:"Ann Beebe"</code>
+    <div class="page">
+      <header class="hero">
+        <h1>KeyQL Validator · eDisco Edition</h1>
+        <p class="tagline">
+          Draft, validate, and dry-run Microsoft Purview eDiscovery KeyQL queries locally —
+          before filing a real case.
         </p>
-      </section>
-      <section class="output-section">
-        <h2>Diagnostics</h2>
-        <ul id="diagnostics" aria-live="polite"></ul>
-        <h2>Dry-run matches <span id="match-count" class="count"></span></h2>
-        <ul id="matches" aria-live="polite"></ul>
-        <details>
-          <summary>Parsed AST</summary>
-          <pre id="ast-output"></pre>
-        </details>
-      </section>
-    </main>
+        <div class="meta" id="page-meta"></div>
+      </header>
+
+      <div class="warning-banner">
+        <div>
+          <strong>Synthetic data only.</strong>
+          Everything on this page — identities, domains, subjects — is fictitious. Do
+          not enter real user names, mailbox addresses, or tenant identifiers.
+        </div>
+      </div>
+
+      <main class="layout">
+        <div class="main-column">
+          <section class="panel help-intro" id="help">
+            <h2>How to use</h2>
+            <p class="description">
+              Three ways to build a query. Each approach feeds the same editor, which
+              is parsed and validated against the eDiscovery catalog and run against a
+              small synthetic corpus.
+            </p>
+            <ol>
+              <li>
+                <strong>Pick a scenario</strong> — ready-made queries using fake
+                identities. Click one to load it into the editor.
+              </li>
+              <li>
+                <strong>Use the condition builder</strong> — add properties from a
+                dropdown, choose an operator, pick a synthetic value. The KeyQL preview
+                updates live; click <em>Apply to editor</em> to push it.
+              </li>
+              <li>
+                <strong>Type directly in the editor</strong> — full autocompletion for
+                properties, operators, and enum values. Live diagnostics flag unknown
+                properties, type mismatches, and nested quotes.
+              </li>
+            </ol>
+          </section>
+
+          <section class="panel" id="scenarios">
+            <h2>Scenarios</h2>
+            <p class="description">
+              Templates mirroring the most common eDiscovery search shapes. All
+              identities, project names, and domains are synthetic.
+            </p>
+            <div class="scenario-list" id="scenario-list"></div>
+          </section>
+
+          <section class="panel" id="builder">
+            <h2>Condition builder</h2>
+            <p class="description">
+              Mirrors the Purview condition builder. Each row becomes one property
+              restriction — values come from the synthetic data palette so you don't
+              type real names.
+            </p>
+            <div id="builder-rows"></div>
+            <div class="builder-actions">
+              <button id="builder-add-condition" type="button">+ Add condition</button>
+              <button id="builder-apply" type="button" class="primary">
+                Apply to editor
+              </button>
+              <button id="builder-reset" type="button">Reset</button>
+            </div>
+            <div class="builder-preview placeholder" id="builder-preview">
+              (no conditions yet)
+            </div>
+          </section>
+
+          <section class="panel" id="editor-panel">
+            <h2>Query editor</h2>
+            <p class="description">
+              Syntax-highlighted KeyQL. <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + space triggers
+              autocomplete.
+            </p>
+            <div id="editor-host"></div>
+          </section>
+
+          <section class="panel" id="diagnostics-panel">
+            <h2>Diagnostics</h2>
+            <ul id="diagnostics" aria-live="polite"></ul>
+          </section>
+
+          <section class="panel" id="matches-panel">
+            <h2>
+              Dry-run matches
+              <span class="count" id="match-count"></span>
+            </h2>
+            <p class="description">
+              Evaluates the parsed query against a small synthetic corpus of 11 items
+              (mail, Teams, and documents). Useful for sanity-checking scope before
+              filing a real eDiscovery collection.
+            </p>
+            <ul id="matches" aria-live="polite"></ul>
+            <details class="ast-details">
+              <summary>Parsed AST</summary>
+              <pre id="ast-output"></pre>
+            </details>
+          </section>
+        </div>
+
+        <aside class="rail">
+          <section class="panel" id="samples">
+            <h2>Synthetic data</h2>
+            <p class="description">
+              Click a chip to copy it to your clipboard, then paste into the builder or
+              editor.
+            </p>
+            <div id="samples-container"></div>
+          </section>
+
+          <section class="panel" id="references">
+            <h2>Official references</h2>
+            <p class="description">
+              Links to Microsoft Learn. Shown with the doc's own last-updated date and
+              when this tool's catalog was captured from it.
+            </p>
+            <ul class="references-list" id="references-list"></ul>
+          </section>
+        </aside>
+      </main>
+
+      <footer class="foot">
+        <span id="build-info"></span>
+        <span>
+          <a id="repo-link" href="#" rel="noreferrer">source</a> ·
+          MIT license · no data leaves your browser
+        </span>
+      </footer>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

@@ -6,31 +6,41 @@
       {
         "title": "Use the condition builder to create search queries in eDiscovery",
         "url": "https://learn.microsoft.com/en-us/purview/edisc-condition-builder",
+        "docLastUpdated": "2026-04-13",
+        "docAuthoredOn": "2026-04-02",
         "capturedOn": "2026-04-16",
         "appliesTo": "new"
       },
       {
         "title": "Use Keyword Query Language to create search queries in eDiscovery",
         "url": "https://learn.microsoft.com/en-us/purview/edisc-keyword-query-language",
+        "docLastUpdated": "2026-04-13",
+        "docAuthoredOn": "2025-03-11",
         "capturedOn": "2026-04-16",
         "appliesTo": "new"
       },
       {
         "title": "Keyword queries and search conditions for eDiscovery (classic / 21Vianet)",
         "url": "https://learn.microsoft.com/en-us/purview/ediscovery-keyword-queries-and-search-conditions",
+        "docLastUpdated": "2026-03-16",
+        "docAuthoredOn": "2024-10-31",
         "capturedOn": "2026-04-16",
         "appliesTo": "classic"
       },
       {
         "title": "Keyword Query Language (KeyQL) syntax reference",
         "url": "https://learn.microsoft.com/en-us/sharepoint/dev/general-development/keyword-query-language-kql-syntax-reference",
+        "docLastUpdated": "2025-10-01",
+        "docAuthoredOn": "2025-09-27",
         "capturedOn": "2026-04-16",
         "appliesTo": "reference"
       },
       {
         "title": "[MS-KQL]: Keyword Query Language Structure Protocol",
         "url": "https://learn.microsoft.com/en-us/openspecs/sharepoint_protocols/MS-KQL/3bbf06cd-8fc1-4277-bd92-8661ccd3c9b0",
-        "localCopy": "SharePointProtocols/[MS-KQL].pdf",
+        "docLastUpdated": "2022-02-15",
+        "docRevision": "7.0",
+        "capturedOn": "2026-04-16",
         "appliesTo": "reference"
       }
     ],

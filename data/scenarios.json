@@ -1,0 +1,98 @@
+{
+  "meta": {
+    "description": "Curated KeyQL scenario templates using synthetic identities only. Clicking a scenario replaces the current query — names, domains, and projects are fictitious.",
+    "syntheticDomains": ["contoso.com", "fabrikam.com"],
+    "syntheticKeywords": ["Tradewinds", "Northwind", "Q1 Financials", "Fabrikam onboarding"]
+  },
+  "scenarios": [
+    {
+      "id": "emails-from-user-in-range",
+      "title": "Emails from a user within a date range",
+      "summary": "All mail sent by one user between two dates.",
+      "query": "kind:email AND from:\"pilarp@contoso.com\" AND sent>=2025-01-01 AND sent<=2025-03-31"
+    },
+    {
+      "id": "emails-between-two-users",
+      "title": "Emails between two specific users",
+      "summary": "Either direction between User A and User B.",
+      "query": "kind:email AND ((from:pilarp@contoso.com AND to:garthf@contoso.com) OR (from:garthf@contoso.com AND to:pilarp@contoso.com))"
+    },
+    {
+      "id": "project-keyword-across-mail-and-docs",
+      "title": "Mentions of a project across mail and documents",
+      "summary": "Free-text keyword hits anywhere, both mail and files.",
+      "query": "Tradewinds"
+    },
+    {
+      "id": "docs-by-author-filetype",
+      "title": "Documents by a specific author and file type",
+      "summary": "Narrow to docx/xlsx/pptx owned by one person.",
+      "query": "kind:docs AND author:\"Ann Beebe\" AND (filetype:docx OR filetype:xlsx OR filetype:pptx)"
+    },
+    {
+      "id": "teams-chat-participants",
+      "title": "Teams chats involving a specific participant",
+      "summary": "Pulls Teams chats / meetings / calls where a user is involved.",
+      "query": "kind:microsoftteams AND participants:pilarp@contoso.com"
+    },
+    {
+      "id": "large-attachments",
+      "title": "Large messages with attachments",
+      "summary": "Attachments over 100 KB.",
+      "query": "kind:email AND hasattachment:true AND size>100000"
+    },
+    {
+      "id": "high-importance-sent-last-month",
+      "title": "High-importance mail sent last month",
+      "summary": "Uses the 'last month' relative interval keyword.",
+      "query": "kind:email AND importance:high AND sent:\"last month\""
+    },
+    {
+      "id": "exclude-automated-senders",
+      "title": "Emails to a user excluding automated senders",
+      "summary": "Demonstrates explicit AND NOT (space = OR in eDiscovery).",
+      "query": "kind:email AND to:pilarp@contoso.com AND NOT from:noreply@example.com"
+    },
+    {
+      "id": "external-domain-correspondence",
+      "title": "Correspondence with an external domain",
+      "summary": "Participants on a domain other than contoso.com.",
+      "query": "kind:email AND participants:fabrikam.com"
+    },
+    {
+      "id": "files-modified-in-window",
+      "title": "Files last modified in a specific window",
+      "summary": "Document-side property LastModifiedTime.",
+      "query": "kind:docs AND lastmodifiedtime>=2025-01-01 AND lastmodifiedtime<=2025-03-31"
+    }
+  ],
+  "synthetic": {
+    "identities": [
+      { "upn": "pilarp@contoso.com", "displayName": "Pilar Pinilla" },
+      { "upn": "garthf@contoso.com", "displayName": "Garth Fort" },
+      { "upn": "annb@contoso.com", "displayName": "Ann Beebe" },
+      { "upn": "sarad@contoso.com", "displayName": "Sara Davis" },
+      { "upn": "diego@fabrikam.com", "displayName": "Diego Siciliani" },
+      { "upn": "noreply@example.com", "displayName": "System (automated)" }
+    ],
+    "subjects": [
+      "Q1 Financials — draft for review",
+      "Re: Q1 Financials — draft for review",
+      "Vendor onboarding — Fabrikam",
+      "Tradewinds weekly sync notes",
+      "Northwind launch plan",
+      "Expense report reminder",
+      "Training completion"
+    ],
+    "keywords": [
+      "Tradewinds",
+      "Northwind",
+      "Q1 Financials",
+      "vendor onboarding",
+      "expense report",
+      "quarterly review"
+    ],
+    "fileTypes": ["docx", "xlsx", "pptx", "pdf", "txt"],
+    "relativeDates": ["today", "yesterday", "this week", "this month", "last month", "this year", "last year"]
+  }
+}
