@@ -43,6 +43,7 @@ const builderAdd = must<HTMLButtonElement>("#builder-add-condition");
 const builderApply = must<HTMLButtonElement>("#builder-apply");
 const builderReset = must<HTMLButtonElement>("#builder-reset");
 const operatorLegendList = must<HTMLUListElement>("#operator-legend-list");
+const scenarioLoadMore = must<HTMLButtonElement>("#scenario-load-more");
 const editorStatus = must<HTMLSpanElement>("#editor-status");
 const nlInput = must<HTMLInputElement>("#nl-input");
 const nlTranslate = must<HTMLButtonElement>("#nl-translate");
@@ -80,7 +81,7 @@ initNaturalLanguage({
 });
 
 renderOperatorLegend(operatorLegendList);
-renderScenarios(scenarioList, (scenario) => {
+renderScenarios(scenarioList, scenarioLoadMore, (scenario) => {
   setEditorContents(scenario.query, `loaded scenario: ${scenario.title}`);
 });
 renderReferences(referencesList);

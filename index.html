@@ -32,14 +32,14 @@
       <main class="layout">
         <div class="main-column">
           <section class="panel help-intro" id="help">
-            <details>
+            <details open>
               <summary>
                 <h2 style="display: inline-flex; margin: 0">How to use</h2>
               </summary>
               <p class="description">
-                Four ways to build a query — each feeds the editor below, which is
-                parsed and validated against the eDiscovery catalog and run against a
-                small synthetic corpus.
+                Four ways to build a query — each feeds the query editor below, which
+                is parsed and validated against the eDiscovery catalog and run against
+                a small synthetic corpus.
               </p>
               <ol>
                 <li>
@@ -52,47 +52,14 @@
                   rows; synthetic samples built in.
                 </li>
                 <li>
-                  <strong>Pick a scenario</strong> — ready-made templates.
+                  <strong>Pick a scenario</strong> — ready-made templates for common
+                  search shapes.
                 </li>
                 <li>
                   <strong>Type directly in the editor</strong> — autocompletion for
                   properties, operators, and enum values.
                 </li>
               </ol>
-            </details>
-          </section>
-
-          <section class="panel editor-panel" id="editor-panel">
-            <h2>
-              Query editor
-              <span class="count" id="editor-status"></span>
-            </h2>
-            <p class="description">
-              Syntax-highlighted KeyQL. <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + space triggers
-              autocomplete.
-            </p>
-            <div id="editor-host"></div>
-          </section>
-
-          <section class="panel" id="diagnostics-panel">
-            <h2>Diagnostics</h2>
-            <ul id="diagnostics" aria-live="polite"></ul>
-          </section>
-
-          <section class="panel" id="matches-panel">
-            <h2>
-              Dry-run matches
-              <span class="count" id="match-count"></span>
-            </h2>
-            <p class="description">
-              Evaluates the parsed query against a small synthetic corpus of 11 items
-              (mail, Teams, and documents). Useful for sanity-checking scope before
-              filing a real eDiscovery collection.
-            </p>
-            <ul id="matches" aria-live="polite"></ul>
-            <details class="ast-details">
-              <summary>Parsed AST</summary>
-              <pre id="ast-output"></pre>
             </details>
           </section>
 
@@ -148,16 +115,49 @@
           </section>
 
           <section class="panel" id="scenarios">
-            <details id="scenarios-details" open>
-              <summary>
-                <h2 style="display: inline-flex; margin: 0">Scenarios</h2>
-              </summary>
-              <p class="description">
-                Templates for the most common eDiscovery search shapes. All
-                identities, project names, and domains are synthetic. Selecting one
-                replaces the editor content above.
-              </p>
-              <div class="scenario-list" id="scenario-list"></div>
+            <h2>Scenarios</h2>
+            <p class="description">
+              Templates for the most common eDiscovery search shapes. All identities,
+              project names, and domains are synthetic. Selecting one replaces the
+              editor content below.
+            </p>
+            <div class="scenario-list" id="scenario-list"></div>
+            <div class="scenario-actions">
+              <button id="scenario-load-more" type="button" hidden></button>
+            </div>
+          </section>
+
+          <section class="panel editor-panel" id="editor-panel">
+            <h2>
+              Query editor
+              <span class="count" id="editor-status"></span>
+            </h2>
+            <p class="description">
+              Syntax-highlighted KeyQL. <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + space triggers
+              autocomplete.
+            </p>
+            <div id="editor-host"></div>
+          </section>
+
+          <section class="panel" id="diagnostics-panel">
+            <h2>Diagnostics</h2>
+            <ul id="diagnostics" aria-live="polite"></ul>
+          </section>
+
+          <section class="panel" id="matches-panel">
+            <h2>
+              Dry-run matches
+              <span class="count" id="match-count"></span>
+            </h2>
+            <p class="description">
+              Evaluates the parsed query against a small synthetic corpus of 11 items
+              (mail, Teams, and documents). Useful for sanity-checking scope before
+              filing a real eDiscovery collection.
+            </p>
+            <ul id="matches" aria-live="polite"></ul>
+            <details class="ast-details">
+              <summary>Parsed AST</summary>
+              <pre id="ast-output"></pre>
             </details>
           </section>
         </div>

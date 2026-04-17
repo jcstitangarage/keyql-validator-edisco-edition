@@ -480,6 +480,29 @@ details.ast-details summary {
   margin-top: 0.6rem;
 }
 
+.scenario-summary {
+  color: var(--fg-muted);
+  font-size: 0.82rem;
+}
+
+.scenario-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.75rem;
+}
+
+.scenario-actions button {
+  font-size: 0.85rem;
+  color: var(--accent);
+  border-color: var(--border);
+  background: var(--panel);
+}
+
+.scenario-actions button:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
 .scenario {
   text-align: left;
   padding: 0.65rem 0.8rem;
