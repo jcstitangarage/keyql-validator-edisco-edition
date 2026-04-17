@@ -1,0 +1,621 @@
+{
+  "$schema": "./ediscovery-properties.schema.json",
+  "meta": {
+    "purpose": "Authoritative catalog of searchable properties, operators, and enum values supported by the Microsoft Purview eDiscovery condition builder and KeyQL editor. Scoped to eDiscovery — not the full SharePoint KQL surface.",
+    "sources": [
+      {
+        "title": "Use the condition builder to create search queries in eDiscovery",
+        "url": "https://learn.microsoft.com/en-us/purview/edisc-condition-builder",
+        "capturedOn": "2026-04-16",
+        "appliesTo": "new"
+      },
+      {
+        "title": "Use Keyword Query Language to create search queries in eDiscovery",
+        "url": "https://learn.microsoft.com/en-us/purview/edisc-keyword-query-language",
+        "capturedOn": "2026-04-16",
+        "appliesTo": "new"
+      },
+      {
+        "title": "Keyword queries and search conditions for eDiscovery (classic / 21Vianet)",
+        "url": "https://learn.microsoft.com/en-us/purview/ediscovery-keyword-queries-and-search-conditions",
+        "capturedOn": "2026-04-16",
+        "appliesTo": "classic"
+      },
+      {
+        "title": "Keyword Query Language (KeyQL) syntax reference",
+        "url": "https://learn.microsoft.com/en-us/sharepoint/dev/general-development/keyword-query-language-kql-syntax-reference",
+        "capturedOn": "2026-04-16",
+        "appliesTo": "reference"
+      },
+      {
+        "title": "[MS-KQL]: Keyword Query Language Structure Protocol",
+        "url": "https://learn.microsoft.com/en-us/openspecs/sharepoint_protocols/MS-KQL/3bbf06cd-8fc1-4277-bd92-8661ccd3c9b0",
+        "localCopy": "SharePointProtocols/[MS-KQL].pdf",
+        "appliesTo": "reference"
+      }
+    ],
+    "notes": [
+      "'new' = Purview eDiscovery as of the Aug 31 2025 rework (purview.microsoft.com).",
+      "'classic' = legacy Content Search / eDiscovery (Std+Prem). Retired everywhere except 21Vianet (China) tenants as of Aug 31 2025.",
+      "'premium' flag marks properties surfaced only in eDiscovery (Premium).",
+      "Operator set here is the eDiscovery subset. MS-KQL defines more (e.g. WORDS, NEAR, XRANK); those are not reliably honored by eDiscovery and are omitted unless explicitly documented.",
+      "KeyQL is case-insensitive for property names and values; Boolean operators (AND, OR, NOT, NEAR) must be uppercase."
+    ]
+  },
+
+  "booleanOperators": [
+    { "name": "AND", "symbol": "AND", "alias": "+", "description": "All terms must match. Space between terms in eDiscovery is equivalent to OR, not AND — be explicit.", "uppercase": true },
+    { "name": "OR", "symbol": "OR", "description": "Any term matches. A space between two property:value expressions behaves like OR.", "uppercase": true },
+    { "name": "NOT", "symbol": "NOT", "alias": "-", "description": "Excludes matching items.", "uppercase": true },
+    { "name": "NEAR", "symbol": "NEAR(n)", "description": "Proximity operator. n = max words between the two terms (default 8). Free-text only; not valid inside property restrictions.", "uppercase": true, "freeTextOnly": true }
+  ],
+
+  "propertyOperators": [
+    { "op": ":",  "name": "contains",   "query": "property:value",           "supportedTypes": ["text","recipient","date","number","boolean","enum","url"], "description": "Property contains the value (substring/term match for text; equality for enums/bool)." },
+    { "op": "=",  "name": "equals",     "query": "property=value",           "supportedTypes": ["text","recipient","date","number","boolean","enum","url"], "description": "Equality. Same as ':' for eDiscovery in most cases." },
+    { "op": "<>", "name": "notEquals",  "query": "property<>value",          "supportedTypes": ["text","recipient","date","number","boolean","enum"],       "description": "Not equal." },
+    { "op": "<",  "name": "lessThan",   "query": "property<value",           "supportedTypes": ["date","number"],                                           "description": "Less than. Numeric or date only." },
+    { "op": ">",  "name": "greaterThan","query": "property>value",           "supportedTypes": ["date","number"],                                           "description": "Greater than. Numeric or date only." },
+    { "op": "<=", "name": "lessOrEqual","query": "property<=value",          "supportedTypes": ["date","number"],                                           "description": "Less than or equal." },
+    { "op": ">=", "name": "greaterOrEqual","query": "property>=value",       "supportedTypes": ["date","number"],                                           "description": "Greater than or equal." },
+    { "op": "..", "name": "range",      "query": "property:value1..value2",  "supportedTypes": ["date","number"],                                           "description": "Inclusive range. For date ranges, from start-of-day A to end-of-day B (UTC)." }
+  ],
+
+  "conditionBuilderOperators": [
+    { "label": "After",              "query": "property>date",                              "appliesTo": ["date"] },
+    { "label": "Before",             "query": "property<date",                              "appliesTo": ["date"] },
+    { "label": "Between",            "query": "property:A..B",                              "appliesTo": ["date","number"] },
+    { "label": "Contains any of",    "query": "(property:v1) OR (property:v2)",             "appliesTo": ["text","recipient","enum","url"] },
+    { "label": "Doesn't contain any of","query": "-property:value  OR  NOT property:value", "appliesTo": ["text","recipient","enum","url"] },
+    { "label": "Equals any of",      "query": "(property=v1) OR (property=v2)",             "appliesTo": ["text","recipient","enum","url"] },
+    { "label": "Doesn't equal any of","query": "-property=value  OR  NOT property=value",   "appliesTo": ["text","recipient","enum","url"] },
+    { "label": "Equals",             "query": "property=value",                             "appliesTo": ["number"], "note": "Condition-builder surface restricts this to Size." },
+    { "label": "Greater",            "query": "property>value",                             "appliesTo": ["number"] },
+    { "label": "Greater or equal",   "query": "property>=value",                            "appliesTo": ["number"] },
+    { "label": "Less",               "query": "property<value",                             "appliesTo": ["number"] },
+    { "label": "Less or equal",      "query": "property<=value",                            "appliesTo": ["number"] },
+    { "label": "Not equal",          "query": "property<>value",                            "appliesTo": ["number"] }
+  ],
+
+  "wildcards": {
+    "prefix":   { "symbol": "*", "description": "Prefix/trailing wildcard, e.g. cat* matches cat, cats, catalog.", "supported": true },
+    "suffix":   { "symbol": "*cat", "description": "Suffix wildcard.", "supported": false },
+    "infix":    { "symbol": "c*t", "description": "Infix wildcard.",  "supported": false },
+    "substring":{ "symbol": "*cat*", "description": "Substring wildcard.", "supported": false },
+    "notes": [
+      "Wildcards inside quoted phrases are not expanded (quotes stop wildcards).",
+      "A period directly before '*' changes tokenization; don't use 'cat.*'."
+    ]
+  },
+
+  "dateFormats": [
+    { "pattern": "YYYY-MM-DD",              "example": "2025-04-16" },
+    { "pattern": "YYYY-MM-DDThh:mm:ss",     "example": "2025-04-16T13:05:22" },
+    { "pattern": "YYYY-MM-DDThh:mm:ssZ",    "example": "2025-04-16T13:05:22Z" },
+    { "pattern": "YYYY-MM-DDThh:mm:ss.fffZ","example": "2025-04-16T13:05:22.1234567Z", "note": "Up to 7 fractional-second digits." }
+  ],
+
+  "dateIntervals": [
+    { "keyword": "today",      "description": "Start to end of current day (UTC)." },
+    { "keyword": "yesterday",  "description": "The full previous day." },
+    { "keyword": "this week",  "description": "Current week, culture-dependent first day.", "quote": true },
+    { "keyword": "this month", "description": "Current month.", "quote": true },
+    { "keyword": "last month", "description": "Previous month.", "quote": true },
+    { "keyword": "this year",  "description": "Current year.", "quote": true },
+    { "keyword": "last year",  "description": "Previous year.", "quote": true }
+  ],
+
+  "kindValues": [
+    "contacts","docs","email","externaldata","faxes","fax","im","journals","meetings","microsoftteams","notes","posts","rssfeeds","tasks","voicemail"
+  ],
+
+  "specialCharacters": {
+    "reserved": ["+","-","=",":","!","@","#","%","^","&",",",";","_","/","?","(",")","[","]","{","}"],
+    "description": "These characters are either replaced by a blank space in the actual search or cause an error when used outside quoted phrases. They are not indexed as content.",
+    "notes": [
+      "Quotation marks allow some of these (e.g. in phrases like \"Q1 review\").",
+      "Nested quotation marks are NOT supported by the KeyQL editor — flag these as errors."
+    ]
+  },
+
+  "recipientExpansion": {
+    "enabled": true,
+    "description": "When any recipient property (From, To, Cc, Bcc, Participants, Recipients, Sender) is queried, Purview expands the match to include the user's UPN, alias, display name, and LegacyExchangeDN. This is a behavior to model in the evaluator, not a syntax feature.",
+    "disableTechnique": "Append '*' to a partial address inside quotes, e.g. from:\"ronnie@contoso*\".",
+    "caveat": "Disabling expansion may cause relevant items to be missed."
+  },
+
+  "properties": [
+    {
+      "name": "AttachmentNames",
+      "category": "mail",
+      "type": "text",
+      "operators": [":", "="],
+      "description": "Names of files attached to an email message.",
+      "examples": ["attachmentnames:annualreport.pptx", "attachmentnames:annual*"],
+      "appliesTo": ["classic","new"]
+    },
+    {
+      "name": "Bcc",
+      "category": "mail",
+      "type": "recipient",
+      "operators": [":", "=", "<>"],
+      "description": "The Bcc field of an email message.",
+      "examples": ["bcc:pilarp@contoso.com", "bcc:\"Pilar Pinilla\""],
+      "recipientExpansion": true,
+      "appliesTo": ["classic","new"]
+    },
+    {
+      "name": "Category",
+      "category": "mail",
+      "type": "enum",
+      "operators": [":", "="],
+      "values": ["blue","green","orange","purple","red","yellow"],
+      "description": "Outlook categories assigned by users.",
+      "examples": ["category:\"Red Category\""],
+      "appliesTo": ["classic","new"]
+    },
+    {
+      "name": "Cc",
+      "category": "mail",
+      "type": "recipient",
+      "operators": [":", "=", "<>"],
+      "description": "The Cc field of an email message.",
+      "examples": ["cc:pilarp@contoso.com", "cc:\"Pilar Pinilla\""],
+      "recipientExpansion": true,
+      "appliesTo": ["classic","new"]
+    },
+    {
+      "name": "Folderid",
+      "category": "mail",
+      "type": "text",
+      "operators": [":", "="],
+      "description": "48-character folder GUID for a specific mailbox folder. Does not recurse into subfolders.",
+      "examples": ["folderid:4D6DD7F943C29041A65787E30F02AD1F00000000013A0000"],
+      "appliesTo": ["classic","new"]
+    },
+    {
+      "name": "From",
+      "category": "mail",
+      "type": "recipient",
+      "operators": [":", "=", "<>"],
+      "description": "Sender of an email message. Accepts UPN, alias, or display name.",
+      "examples": ["from:pilarp@contoso.com", "from:\"Pilar Pinilla\""],
+      "recipientExpansion": true,
+      "appliesTo": ["classic","new"]
+    },
+    {
+      "name": "HasAttachment",
+      "category": "mail",
+      "type": "boolean",
+      "operators": [":", "="],
+      "values": ["true","false"],
+      "description": "Whether a message has an attachment.",
+      "examples": ["hasattachment:true"],
+      "appliesTo": ["classic","new"]
+    },
+    {
+      "name": "Importance",
+      "category": "mail",
+      "type": "enum",
+      "operators": [":", "="],
+      "values": ["high","medium","low"],
+      "description": "Outlook message importance flag.",
+      "examples": ["importance:high"],
+      "appliesTo": ["classic","new"]
+    },
+    {
+      "name": "IsRead",
+      "category": "mail",
+      "type": "boolean",
+      "operators": [":", "="],
+      "values": ["true","false"],
+      "description": "Whether the message has been read.",
+      "examples": ["isread:false"],
+      "appliesTo": ["classic","new"]
+    },
+    {
+      "name": "ItemClass",
+      "category": "mail",
+      "type": "text",
+      "operators": [":", "="],
+      "description": "Message class property. Used to search third-party imported data (ipm.externaldata.*).",
+      "examples": ["itemclass:ipm.externaldata.Facebook*", "itemclass:ipm.externaldata.Twitter* AND from:\"Ann Beebe\""],
+      "appliesTo": ["classic","new"],
+      "aliases": ["Item class"]
+    },
+    {
+      "name": "Kind",
+      "category": "mail",
+      "type": "enum",
+      "operators": [":", "="],
+      "valuesRef": "kindValues",
+      "description": "Type of item. 'microsoftteams' covers Teams chats, meetings, and calls.",
+      "examples": ["kind:email", "kind:email OR kind:im OR kind:voicemail", "kind:microsoftteams"],
+      "appliesTo": ["classic","new"]
+    },
+    {
+      "name": "Participants",
+      "category": "mail",
+      "type": "recipient",
+      "operators": [":", "=", "<>"],
+      "description": "Any people field (From, To, Cc, Bcc). Useful for 'did X touch this message in any capacity'.",
+      "examples": ["participants:garthf@contoso.com", "participants:contoso.com"],
+      "recipientExpansion": true,
+      "appliesTo": ["classic","new"]
+    },
+    {
+      "name": "Received",
+      "category": "mail",
+      "type": "date",
+      "operators": [":", "=", "<", ">", "<=", ">=", ".."],
+      "description": "Date a message was received.",
+      "examples": ["received:2025-04-15", "received>=2025-01-01 AND received<=2025-03-31"],
+      "appliesTo": ["classic","new"]
+    },
+    {
+      "name": "Recipients",
+      "category": "mail",
+      "type": "recipient",
+      "operators": [":", "=", "<>"],
+      "description": "All recipient fields (To, Cc, Bcc).",
+      "examples": ["recipients:garthf@contoso.com", "recipients:contoso.com"],
+      "recipientExpansion": true,
+      "appliesTo": ["classic","new"]
+    },
+    {
+      "name": "Sender",
+      "category": "mail",
+      "type": "recipient",
+      "operators": [":", "=", "<>"],
+      "description": "Sender of an email message. Present as a distinct condition in the new experience; overlaps with From.",
+      "examples": ["sender:pilarp@contoso.com"],
+      "recipientExpansion": true,
+      "appliesTo": ["new"]
+    },
+    {
+      "name": "Sent",
+      "category": "mail",
+      "type": "date",
+      "operators": [":", "=", "<", ">", "<=", ">=", ".."],
+      "description": "Date a message was sent.",
+      "examples": ["sent:2025-07-01", "sent>=2025-06-01 AND sent<=2025-07-01"],
+      "appliesTo": ["classic","new"]
+    },
+    {
+      "name": "Size",
+      "category": "common",
+      "type": "number",
+      "unit": "bytes",
+      "operators": [":", "=", "<>", "<", ">", "<=", ">=", ".."],
+      "description": "Item size in bytes.",
+      "examples": ["size>26214400", "size:1..1048567"],
+      "appliesTo": ["classic","new"]
+    },
+    {
+      "name": "Subject",
+      "category": "mail",
+      "type": "text",
+      "operators": [":", "="],
+      "description": "Subject line of an email. Substring match — subject:\"Q1 Financials\" also matches 'Q1 Financials 2025'.",
+      "examples": ["subject:\"Quarterly Financials\"", "subject:northwind"],
+      "appliesTo": ["classic","new"]
+    },
+    {
+      "name": "SubjectTitle",
+      "category": "common",
+      "type": "text",
+      "operators": [":", "="],
+      "description": "Subject (for mail) or Title (for documents). Condition-builder label: 'Subject/Title'.",
+      "examples": ["subjecttitle:\"northwind\""],
+      "appliesTo": ["classic","new"]
+    },
+    {
+      "name": "To",
+      "category": "mail",
+      "type": "recipient",
+      "operators": [":", "=", "<>"],
+      "description": "The To field of an email message.",
+      "examples": ["to:annb@contoso.com", "to:\"Ann Beebe\""],
+      "recipientExpansion": true,
+      "appliesTo": ["classic","new"]
+    },
+    {
+      "name": "Topic",
+      "category": "mail",
+      "type": "text",
+      "operators": [":", "="],
+      "description": "Summary of the main subject/theme of an email thread or conversation.",
+      "examples": ["topic:\"reorg\""],
+      "premium": true,
+      "appliesTo": ["new"]
+    },
+
+    {
+      "name": "Author",
+      "category": "document",
+      "type": "text",
+      "operators": [":", "="],
+      "description": "Author field from Office documents (persists across copies). Use display name.",
+      "examples": ["author:\"Garth Fort\""],
+      "appliesTo": ["classic","new"]
+    },
+    {
+      "name": "ContentType",
+      "category": "document",
+      "type": "text",
+      "operators": [":", "="],
+      "description": "SharePoint content type (Item, Document, Video, etc.).",
+      "examples": ["contenttype:document"],
+      "appliesTo": ["classic","new"]
+    },
+    {
+      "name": "Created",
+      "category": "document",
+      "type": "date",
+      "operators": [":", "=", "<", ">", "<=", ">=", ".."],
+      "description": "Date an item was created.",
+      "examples": ["created>=2025-06-01"],
+      "appliesTo": ["classic","new"]
+    },
+    {
+      "name": "CreatedBy",
+      "category": "document",
+      "type": "text",
+      "operators": [":", "="],
+      "description": "Person who created or uploaded an item. Use display name.",
+      "examples": ["createdby:\"Garth Fort\""],
+      "appliesTo": ["classic","new"]
+    },
+    {
+      "name": "DetectedLanguage",
+      "category": "document",
+      "type": "text",
+      "operators": [":", "="],
+      "description": "Detected language of the item.",
+      "examples": ["detectedlanguage:english"],
+      "appliesTo": ["classic","new"]
+    },
+    {
+      "name": "DocumentLink",
+      "category": "document",
+      "type": "url",
+      "operators": [":", "="],
+      "description": "Path (URL) to a folder on SharePoint/OneDrive. Append '/*' to recurse into subfolders.",
+      "examples": [
+        "documentlink:\"https://contoso-my.sharepoint.com/personal/garthf_contoso_com/Documents/Private\"",
+        "documentlink:\"https://contoso-my.sharepoint.com/personal/garthf_contoso_com/Documents/Shared with Everyone/*\" AND filename:confidential"
+      ],
+      "appliesTo": ["classic","new"]
+    },
+    {
+      "name": "FileExtension",
+      "category": "document",
+      "type": "text",
+      "operators": [":", "="],
+      "description": "File extension (without the dot).",
+      "examples": ["fileextension:xlsx"],
+      "appliesTo": ["classic","new"]
+    },
+    {
+      "name": "FileName",
+      "category": "document",
+      "type": "text",
+      "operators": [":", "="],
+      "description": "Name of a file.",
+      "examples": ["filename:\"marketing plan\"", "filename:estimate"],
+      "appliesTo": ["classic","new"]
+    },
+    {
+      "name": "LastModifiedTime",
+      "category": "document",
+      "type": "date",
+      "operators": [":", "=", "<", ">", "<=", ">=", ".."],
+      "description": "Date an item was last changed.",
+      "examples": ["lastmodifiedtime>=2025-05-01", "lastmodifiedtime>=2025-05-01 AND lastmodifiedtime<=2025-06-01"],
+      "appliesTo": ["classic","new"],
+      "aliases": ["Last modified"]
+    },
+    {
+      "name": "ModifiedBy",
+      "category": "document",
+      "type": "text",
+      "operators": [":", "="],
+      "description": "Person who last changed an item. Use display name.",
+      "examples": ["modifiedby:\"Garth Fort\""],
+      "appliesTo": ["classic","new"]
+    },
+    {
+      "name": "Path",
+      "category": "document",
+      "type": "url",
+      "operators": [":", "="],
+      "description": "URL/location of a file or folder on a SharePoint site. Prefer DocumentLink in most cases.",
+      "examples": ["path:\"https://contoso.sharepoint.com/sites/Teams/\""],
+      "premium": true,
+      "appliesTo": ["classic","new"]
+    },
+    {
+      "name": "SharedWithUsersOWSUser",
+      "category": "document",
+      "type": "recipient",
+      "operators": [":", "="],
+      "description": "Documents shared with a specific user (visible on that user's 'Shared with me' page). Only 'Specific people' shares are returned.",
+      "examples": ["sharedwithusersowsuser:garthf", "sharedwithusersowsuser:\"garthf@contoso.com\""],
+      "appliesTo": ["classic","new"]
+    },
+    {
+      "name": "Title",
+      "category": "document",
+      "type": "text",
+      "operators": [":", "="],
+      "description": "Office document Title metadata (distinct from filename).",
+      "examples": ["title:\"communication plan\""],
+      "appliesTo": ["classic","new"]
+    },
+    {
+      "name": "FileType",
+      "category": "document",
+      "type": "text",
+      "operators": [":", "="],
+      "description": "Condition-builder label for FileExtension. With Equals/Equals any of, wildcard is ignored in condition builder; use KeyQL filetype:doc* to get prefix behavior.",
+      "examples": ["filetype:docx"],
+      "appliesTo": ["classic","new"]
+    },
+
+    {
+      "name": "Date",
+      "category": "common",
+      "type": "date",
+      "operators": [":", "=", "<", ">", "<=", ">=", ".."],
+      "description": "For mail: created/imported date. For docs: last modified date. Condition-builder surface — in raw KeyQL, prefer Received/Sent/Created/LastModifiedTime.",
+      "examples": ["date<2025-04-01", "date:2025-01-01..2025-03-31"],
+      "appliesTo": ["classic","new"]
+    },
+    {
+      "name": "RetentionLabel",
+      "category": "common",
+      "type": "text",
+      "operators": [":", "="],
+      "description": "Retention labels applied to mail/docs. Supports prefix wildcard. Labels with unsupported special characters are silently ignored.",
+      "examples": ["retentionlabel:\"Litigation Hold\"", "retentionlabel:financ*"],
+      "appliesTo": ["classic","new"]
+    },
+    {
+      "name": "ComplianceTag",
+      "category": "common",
+      "type": "text",
+      "operators": [":", "="],
+      "description": "Alias/underlying property for Retention Label in some surfaces.",
+      "examples": ["compliancetag:\"Litigation Hold\""],
+      "appliesTo": ["classic","new"]
+    },
+    {
+      "name": "SenderAuthor",
+      "category": "common",
+      "type": "text",
+      "operators": [":", "="],
+      "description": "Condition-builder combined property: sender (for mail) or author (for documents). In raw KeyQL, prefer From or Author.",
+      "examples": [],
+      "appliesTo": ["classic"]
+    },
+    {
+      "name": "Identifier",
+      "category": "common",
+      "type": "text",
+      "operators": [":", "="],
+      "description": "For mail: MessageID. For Teams: ChatThreadID. Lets you target a specific message, chat, or reaction.",
+      "examples": ["identifier:<a1b2c3-d4e5-f6@contoso.com>"],
+      "premium": true,
+      "appliesTo": ["new"]
+    },
+    {
+      "name": "ContentKind",
+      "category": "common",
+      "type": "enum",
+      "operators": [":", "="],
+      "values": ["SharePointDocument","Copilot","Email","Teams"],
+      "description": "Type/category of the content. Premium condition. Enum values documented are examples; the condition picker is the authoritative source.",
+      "examples": ["contentkind:SharePointDocument", "contentkind:Copilot"],
+      "premium": true,
+      "appliesTo": ["new"]
+    },
+    {
+      "name": "ContentSourceApplication",
+      "category": "common",
+      "type": "enum",
+      "operators": [":", "="],
+      "values": ["OneDriveForBusiness","SharePoint","Exchange","Teams"],
+      "description": "Application/service where the content originated.",
+      "examples": ["contentsourceapplication:OneDriveForBusiness"],
+      "premium": true,
+      "appliesTo": ["new"]
+    },
+    {
+      "name": "SensitiveType",
+      "category": "document",
+      "type": "text",
+      "operators": [":", "="],
+      "description": "Built-in sensitive-info-type NAME, or custom SIT ID. Cannot be used against mailbox content (including Teams chat stored in mailboxes).",
+      "examples": [
+        "SensitiveType:\"Credit Card Number\"",
+        "SensitiveType:\"U.S. Social Security Number (SSN)\"",
+        "SensitiveType:7e13277e-6b04-3b68-94ed-1aeb9d47de37"
+      ],
+      "appliesTo": ["classic","new"],
+      "aliases": ["Sensitive information type","SIT"]
+    },
+    {
+      "name": "SensitivityLabel",
+      "category": "document",
+      "type": "text",
+      "operators": [":", "="],
+      "description": "Sensitivity label applied to a document.",
+      "examples": ["sensitivitylabel:Confidential"],
+      "premium": true,
+      "appliesTo": ["new"]
+    },
+    {
+      "name": "ViewableByExternalUsers",
+      "category": "document",
+      "type": "boolean",
+      "operators": [":", "="],
+      "values": ["true","false"],
+      "description": "Whether a SharePoint/OneDrive item is shared with external users. Eventually-consistent: may lag after sharing changes until re-crawl.",
+      "examples": [
+        "ViewableByExternalUsers:true AND SensitiveType:\"Credit Card Number\"",
+        "ViewableByExternalUsers:true AND ContentType:document NOT FileExtension:aspx"
+      ],
+      "appliesTo": ["classic","new"]
+    },
+
+    { "name": "BusinessAddress", "category": "contact", "type": "text", "operators": [":", "="], "description": "Contact Business (Work) address.", "examples": ["businessaddress:\"123 Main Street\""], "appliesTo": ["classic","new"] },
+    { "name": "BusinessPhone",   "category": "contact", "type": "text", "operators": [":", "="], "description": "Contact Business phone number.", "examples": ["businessphone:\"+1 555 0100\""], "appliesTo": ["classic","new"] },
+    { "name": "CompanyName",     "category": "contact", "type": "text", "operators": [":", "="], "description": "Contact Company property.", "examples": ["companyname:Contoso"], "appliesTo": ["classic","new"] },
+    { "name": "Department",      "category": "contact", "type": "text", "operators": [":", "="], "description": "Contact Department property.", "examples": ["department:Finance"], "appliesTo": ["classic","new"] },
+    { "name": "DisplayName",     "category": "contact", "type": "text", "operators": [":", "="], "description": "Contact display / Full Name.", "examples": ["displayname:\"Pilar Pinilla\""], "appliesTo": ["classic","new"] },
+    { "name": "EmailAddress",    "category": "contact", "type": "text", "operators": [":", "="], "description": "Any email-address property on the contact.", "examples": ["emailaddress:pilarp@contoso.com"], "appliesTo": ["classic","new"] },
+    { "name": "FileAs",          "category": "contact", "type": "text", "operators": [":", "="], "description": "Contact 'File as' listing name.", "examples": ["fileas:\"Pinilla, Pilar\""], "appliesTo": ["classic","new"] },
+    { "name": "GivenName",       "category": "contact", "type": "text", "operators": [":", "="], "description": "Contact First Name.", "examples": ["givenname:Pilar"], "appliesTo": ["classic","new"] },
+    { "name": "HomeAddress",     "category": "contact", "type": "text", "operators": [":", "="], "description": "Contact Home address.", "examples": ["homeaddress:\"Fabrikam Lane\""], "appliesTo": ["classic","new"] },
+    { "name": "HomePhone",       "category": "contact", "type": "text", "operators": [":", "="], "description": "Contact Home phone.", "examples": ["homephone:\"+1 555 0110\""], "appliesTo": ["classic","new"] },
+    { "name": "IMAddress",       "category": "contact", "type": "text", "operators": [":", "="], "description": "Contact IM address.", "examples": ["imaddress:pilarp@contoso.com"], "appliesTo": ["classic","new"] },
+    { "name": "MiddleName",      "category": "contact", "type": "text", "operators": [":", "="], "description": "Contact Middle name.", "examples": ["middlename:Ann"], "appliesTo": ["classic","new"] },
+    { "name": "MobilePhone",     "category": "contact", "type": "text", "operators": [":", "="], "description": "Contact Mobile number.", "examples": ["mobilephone:\"+1 555 0120\""], "appliesTo": ["classic","new"] },
+    { "name": "Nickname",        "category": "contact", "type": "text", "operators": [":", "="], "description": "Contact Nickname.", "examples": ["nickname:Pil"], "appliesTo": ["classic","new"] },
+    { "name": "OfficeLocation",  "category": "contact", "type": "text", "operators": [":", "="], "description": "Contact Office / Office location.", "examples": ["officelocation:Redmond"], "appliesTo": ["classic","new"] },
+    { "name": "OtherAddress",    "category": "contact", "type": "text", "operators": [":", "="], "description": "Contact Other address.", "examples": [], "appliesTo": ["classic","new"] },
+    { "name": "Surname",         "category": "contact", "type": "text", "operators": [":", "="], "description": "Contact Last name.", "examples": ["surname:Pinilla"], "appliesTo": ["classic","new"] }
+  ],
+
+  "reservedTokens": {
+    "conditionMarker": {
+      "token": "(c:c)",
+      "description": "Marker appended by the condition builder to separate the free-text keyword portion from condition cards. Must not appear in manually-written queries — flag as warning.",
+      "relatedMarker": "(c:s)",
+      "relatedDescription": "Separator the new condition builder inserts between multiple keyword grids to enable per-segment hit counts."
+    }
+  },
+
+  "limits": {
+    "maxQueryCharsSharePointOneDrive": 4000,
+    "maxQueryCharsSharePointDefaultFrontEnd": 2048,
+    "maxPropertyRestrictionChars": 2048,
+    "notes": [
+      "The SharePoint/OneDrive 4000-char limit includes keyword text + all location URLs + any permissions filters.",
+      "Nested double-quotation marks are not supported by the KeyQL editor."
+    ]
+  },
+
+  "searchTips": [
+    "Searches are case-insensitive; Boolean operators (AND, OR, NOT, NEAR) must be uppercase.",
+    "Quotes stop wildcards and operators inside the quotes.",
+    "No space allowed between property, operator, and value — `from:pilarp` not `from: pilarp`.",
+    "A space between two property:value pairs behaves like OR, not AND — prefer explicit operators.",
+    "Only prefix wildcards are supported: cat*. Suffix, infix, and substring wildcards are not.",
+    "When searching sites, add a trailing '/' to path/documentlink URLs to avoid matching sibling sites.",
+    "All dates are UTC. Time-zone display settings don't affect search semantics.",
+    "Recipient expansion means `from:user@contoso.com` also matches the same user's alias, display name, and LegacyExchangeDN — disable only deliberately.",
+    "Sent-folder searches can't use SMTP address for the sender; only display names are indexed there."
+  ]
+}

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; base-uri 'self'; form-action 'none'; object-src 'none'; frame-ancestors 'none'"
+    />
+    <title>Purview KeyQL Tester</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Purview KeyQL Tester</h1>
+      <p class="subtitle">Draft, validate, and dry-run eDiscovery queries locally.</p>
+    </header>
+    <main>
+      <section class="editor-section">
+        <label for="editor-host">Query</label>
+        <div id="editor-host"></div>
+      </section>
+      <section class="output-section">
+        <h2>Diagnostics</h2>
+        <ul id="diagnostics" aria-live="polite"></ul>
+        <h2>Parsed AST</h2>
+        <pre id="ast-output" aria-live="polite"></pre>
+      </section>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
