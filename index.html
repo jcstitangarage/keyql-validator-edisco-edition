@@ -32,66 +32,34 @@
       <main class="layout">
         <div class="main-column">
           <section class="panel help-intro" id="help">
-            <h2>How to use</h2>
-            <p class="description">
-              Three ways to build a query. Each approach feeds the same editor, which
-              is parsed and validated against the eDiscovery catalog and run against a
-              small synthetic corpus.
-            </p>
-            <ol>
-              <li>
-                <strong>Pick a scenario</strong> — ready-made queries using fake
-                identities. Click one to load it into the editor.
-              </li>
-              <li>
-                <strong>Use the condition builder</strong> — add properties from a
-                dropdown, choose an operator, pick a synthetic value. The KeyQL preview
-                updates live; click <em>Apply to editor</em> to push it.
-              </li>
-              <li>
-                <strong>Type directly in the editor</strong> — full autocompletion for
-                properties, operators, and enum values. Live diagnostics flag unknown
-                properties, type mismatches, and nested quotes.
-              </li>
-            </ol>
-          </section>
-
-          <section class="panel" id="scenarios">
-            <details id="scenarios-details" open>
+            <details>
               <summary>
-                <h2 style="display: inline-flex; margin: 0">Scenarios</h2>
+                <h2 style="display: inline-flex; margin: 0">How to use</h2>
               </summary>
               <p class="description">
-                Templates mirroring the most common eDiscovery search shapes. All
-                identities, project names, and domains are synthetic. Selecting one
-                loads it into the editor below.
+                Four ways to build a query — each feeds the editor below, which is
+                parsed and validated against the eDiscovery catalog and run against a
+                small synthetic corpus.
               </p>
-              <div class="scenario-list" id="scenario-list"></div>
+              <ol>
+                <li>
+                  <strong>Describe it in English</strong> — the natural-language box
+                  translates common phrases ("emails from Pilar last month about
+                  Tradewinds") into KeyQL.
+                </li>
+                <li>
+                  <strong>Use the condition builder</strong> — property/operator/value
+                  rows; synthetic samples built in.
+                </li>
+                <li>
+                  <strong>Pick a scenario</strong> — ready-made templates.
+                </li>
+                <li>
+                  <strong>Type directly in the editor</strong> — autocompletion for
+                  properties, operators, and enum values.
+                </li>
+              </ol>
             </details>
-          </section>
-
-          <section class="panel" id="builder">
-            <h2>Condition builder</h2>
-            <p class="description">
-              Mirrors the Purview condition builder. Each row is one property
-              restriction — values come from the synthetic data palette so you don't
-              type real names.
-            </p>
-            <details class="operator-legend">
-              <summary>Operator reference — click to expand</summary>
-              <ul id="operator-legend-list"></ul>
-            </details>
-            <div id="builder-rows"></div>
-            <div class="builder-actions">
-              <button id="builder-add-condition" type="button">+ Add condition</button>
-              <button id="builder-apply" type="button" class="primary">
-                Apply to editor
-              </button>
-              <button id="builder-reset" type="button">Reset</button>
-            </div>
-            <div class="builder-preview placeholder" id="builder-preview">
-              (no conditions yet)
-            </div>
           </section>
 
           <section class="panel editor-panel" id="editor-panel">
@@ -127,14 +95,78 @@
               <pre id="ast-output"></pre>
             </details>
           </section>
+
+          <section class="panel" id="nl-panel">
+            <h2>Describe a query in English</h2>
+            <p class="description">
+              Experimental. Recognizes common eDiscovery phrasings — sender/recipient,
+              date windows, file types, attachments, keywords. If a name isn't in the
+              synthetic pool, it flags a warning rather than echo a real identity.
+            </p>
+            <div class="nl-row">
+              <input
+                type="text"
+                id="nl-input"
+                placeholder='e.g. "emails from Pilar to Garth about Tradewinds last month with attachments"'
+              />
+              <button id="nl-translate" type="button" class="primary">Translate</button>
+            </div>
+            <div id="nl-preview" class="builder-preview placeholder">
+              (no translation yet)
+            </div>
+            <ul id="nl-notes" class="nl-notes"></ul>
+            <div class="builder-actions">
+              <button id="nl-apply" type="button" class="primary" disabled>
+                Apply to editor
+              </button>
+              <button id="nl-clear" type="button">Clear</button>
+            </div>
+          </section>
+
+          <section class="panel" id="builder">
+            <h2>Condition builder</h2>
+            <p class="description">
+              Mirrors the Purview condition builder. Each row is one property
+              restriction — values come from the synthetic data palette so you don't
+              type real names.
+            </p>
+            <details class="operator-legend">
+              <summary>Operator reference — click to expand</summary>
+              <ul id="operator-legend-list"></ul>
+            </details>
+            <div id="builder-rows"></div>
+            <div class="builder-actions">
+              <button id="builder-add-condition" type="button">+ Add condition</button>
+              <button id="builder-apply" type="button" class="primary">
+                Apply to editor
+              </button>
+              <button id="builder-reset" type="button">Reset</button>
+            </div>
+            <div class="builder-preview placeholder" id="builder-preview">
+              (no conditions yet)
+            </div>
+          </section>
+
+          <section class="panel" id="scenarios">
+            <details id="scenarios-details" open>
+              <summary>
+                <h2 style="display: inline-flex; margin: 0">Scenarios</h2>
+              </summary>
+              <p class="description">
+                Templates for the most common eDiscovery search shapes. All
+                identities, project names, and domains are synthetic. Selecting one
+                replaces the editor content above.
+              </p>
+              <div class="scenario-list" id="scenario-list"></div>
+            </details>
+          </section>
         </div>
 
         <aside class="rail">
           <section class="panel" id="samples">
             <h2>Synthetic data</h2>
             <p class="description">
-              Click a chip to copy it to your clipboard, then paste into the builder or
-              editor.
+              Click a chip to copy it to your clipboard.
             </p>
             <div id="samples-container"></div>
           </section>

@@ -23,16 +23,70 @@ let idCounter = 0;
 const nextId = () => `row-${++idCounter}`;
 
 export function renderOperatorLegend(host: HTMLElement): void {
-  const ops = getCatalog().propertyOperators;
+  const catalog = getCatalog();
   host.replaceChildren();
-  for (const spec of ops) {
+
+  appendLegendGroup(host, "Property operators (between name and value)", [
+    ...catalog.propertyOperators.map((s) => ({ symbol: s.op, desc: s.description })),
+  ]);
+
+  appendLegendGroup(
+    host,
+    "Boolean & proximity operators (between terms, UPPERCASE required)",
+    [
+      ...catalog.booleanOperators.map((s) => ({
+        symbol: s.name === "NEAR" ? "NEAR(n)" : s.name,
+        desc: s.description,
+      })),
+    ]
+  );
+
+  appendLegendGroup(host, "Shortcuts & wildcards", [
+    { symbol: "+", desc: "Shortcut for AND (inclusion). Must have no space after." },
+    { symbol: "-", desc: "Shortcut for NOT (exclusion). e.g. -from:noreply@example.com" },
+    {
+      symbol: "*",
+      desc: "Prefix wildcard only. cat* matches cat, cats, catalog. Suffix/infix/substring not supported.",
+    },
+    {
+      symbol: '"…"',
+      desc: "Quoted phrase — matches the exact sequence. Stops wildcards inside the quotes.",
+    },
+    {
+      symbol: "( )",
+      desc: "Grouping to control precedence. Prefer explicit grouping; space between terms behaves as OR in eDiscovery.",
+    },
+  ]);
+
+  appendLegendGroup(host, "Condition-builder markers (don't write manually)", [
+    {
+      symbol: "(c:c)",
+      desc: "Inserted by the Purview condition builder to separate keyword text from condition cards.",
+    },
+    {
+      symbol: "(c:s)",
+      desc: "Inserted by the new condition builder to segment multiple keyword grids for hit-count reports.",
+    },
+  ]);
+}
+
+function appendLegendGroup(
+  host: HTMLElement,
+  title: string,
+  items: Array<{ symbol: string; desc: string }>
+): void {
+  const header = document.createElement("li");
+  header.className = "op-group";
+  header.textContent = title;
+  host.appendChild(header);
+  for (const item of items) {
     const li = document.createElement("li");
     const sym = document.createElement("span");
     sym.className = "op-symbol";
-    sym.textContent = spec.op;
+    sym.textContent = item.symbol;
     const desc = document.createElement("span");
     desc.className = "op-desc";
-    desc.textContent = spec.description;
+    desc.textContent = item.desc;
     li.appendChild(sym);
     li.appendChild(desc);
     host.appendChild(li);

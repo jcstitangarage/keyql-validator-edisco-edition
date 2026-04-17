@@ -16,6 +16,7 @@ import {
   initConditionBuilder,
   renderOperatorLegend,
 } from "./ui/conditionBuilder.js";
+import { initNaturalLanguage } from "./ui/nl.js";
 import {
   BUILD_TIME,
   BUILD_COMMIT,
@@ -42,8 +43,13 @@ const builderAdd = must<HTMLButtonElement>("#builder-add-condition");
 const builderApply = must<HTMLButtonElement>("#builder-apply");
 const builderReset = must<HTMLButtonElement>("#builder-reset");
 const operatorLegendList = must<HTMLUListElement>("#operator-legend-list");
-const scenariosDetails = must<HTMLDetailsElement>("#scenarios-details");
 const editorStatus = must<HTMLSpanElement>("#editor-status");
+const nlInput = must<HTMLInputElement>("#nl-input");
+const nlTranslate = must<HTMLButtonElement>("#nl-translate");
+const nlApply = must<HTMLButtonElement>("#nl-apply");
+const nlClear = must<HTMLButtonElement>("#nl-clear");
+const nlPreview = must<HTMLDivElement>("#nl-preview");
+const nlNotes = must<HTMLUListElement>("#nl-notes");
 const pageMeta = must<HTMLDivElement>("#page-meta");
 const buildInfo = must<HTMLSpanElement>("#build-info");
 const repoLink = must<HTMLAnchorElement>("#repo-link");
@@ -63,10 +69,19 @@ initConditionBuilder({
   onApply: (query) => setEditorContents(query, "applied from condition builder"),
 });
 
+initNaturalLanguage({
+  input: nlInput,
+  translateButton: nlTranslate,
+  applyButton: nlApply,
+  clearButton: nlClear,
+  preview: nlPreview,
+  notes: nlNotes,
+  onApply: (query) => setEditorContents(query, "applied from natural language"),
+});
+
 renderOperatorLegend(operatorLegendList);
 renderScenarios(scenarioList, (scenario) => {
   setEditorContents(scenario.query, `loaded scenario: ${scenario.title}`);
-  scenariosDetails.open = false;
 });
 renderReferences(referencesList);
 renderSamples(samplesContainer);
@@ -106,10 +121,14 @@ function setEditorContents(query: string, statusMessage?: string): void {
     changes: { from: 0, to: editorView.state.doc.length, insert: query },
   });
   editorView.focus();
-  editorHost.scrollIntoView({ behavior: "smooth", block: "start" });
-  editorHost.classList.remove("flash");
   requestAnimationFrame(() => {
-    editorHost.classList.add("flash");
+    const editorPanel = document.getElementById("editor-panel");
+    (editorPanel ?? editorHost).scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+    editorHost.classList.remove("flash");
+    requestAnimationFrame(() => editorHost.classList.add("flash"));
     setTimeout(() => editorHost.classList.remove("flash"), 900);
   });
   if (statusMessage) {
